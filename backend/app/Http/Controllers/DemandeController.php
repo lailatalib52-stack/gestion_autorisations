@@ -93,6 +93,20 @@ class DemandeController extends Controller
             ]);
         }
 
+        // Notification aux administrateurs
+        $admins = User::where('role', 'admin')->where('is_active', true)->get();
+        foreach ($admins as $admin) {
+            if ($admin->id !== $managerId) { // Éviter les doublons si l'admin est le manager
+                Notification::create([
+                    'user_id' => $admin->id,
+                    'titre' => 'Nouvelle demande (Admin)',
+                    'message' => "Une nouvelle demande de {$user->name} a été créée.",
+                    'type' => 'info',
+                    'demande_id' => $demande->id,
+                ]);
+            }
+        }
+
         return response()->json([
             'message' => 'Demande créée avec succès.',
             'demande' => $demande->load(['employe', 'manager']),

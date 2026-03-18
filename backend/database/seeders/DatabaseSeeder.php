@@ -104,5 +104,37 @@ class DatabaseSeeder extends Seeder
             'motif' => 'Grippe saisonnière avec certificat médical',
             'statut' => 'en_attente',
         ]);
+
+        // Demandes assignées à l'Admin
+        $admin = User::where('role', 'admin')->first();
+        
+        $demandeAdmin = Demande::create([
+            'user_id' => $employe1->id,
+            'manager_id' => $admin->id,
+            'type' => 'autorisation_absence',
+            'date_debut' => now()->addDays(2)->toDateString(),
+            'date_fin' => now()->addDays(2)->toDateString(),
+            'motif' => 'Formation technique avancée',
+            'statut' => 'en_attente',
+            'commentaire_employe' => 'Je souhaite assister à une formation React.',
+        ]);
+
+        // Notifications pour l'Admin
+        \App\Models\Notification::create([
+            'user_id' => $admin->id,
+            'titre' => 'Nouvelle demande reçue',
+            'message' => "{$employe1->name} a soumis une demande de type Autorisation d'absence",
+            'type' => 'info',
+            'demande_id' => $demandeAdmin->id,
+            'lu' => false,
+        ]);
+
+        \App\Models\Notification::create([
+            'user_id' => $admin->id,
+            'titre' => 'Système mis à jour',
+            'message' => "La plateforme de gestion des autorisations est maintenant opérationnelle.",
+            'type' => 'success',
+            'lu' => false,
+        ]);
     }
 }
