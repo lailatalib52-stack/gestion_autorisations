@@ -25,7 +25,6 @@ export default function LoginPage() {
     }
   };
 
-  const fillDemo = (email, password) => setForm({ email, password });
 
   return (
     <div style={{
@@ -98,35 +97,6 @@ export default function LoginPage() {
               {loading ? <><span className="spinner" style={{borderColor:'rgba(255,255,255,0.4)',borderTopColor:'transparent'}} /> Connexion...</> : 'Se connecter'}
             </button>
           </form>
-
-          {/* Demo accounts */}
-          <div style={{marginTop:24,paddingTop:20,borderTop:'1px solid var(--gray-100)'}}>
-            <p style={{fontSize:12,color:'var(--gray-400)',textAlign:'center',marginBottom:12,fontWeight:600,textTransform:'uppercase',letterSpacing:'0.8px'}}>
-              Comptes de démonstration
-            </p>
-            <div style={{display:'flex',flexDirection:'column',gap:8}}>
-              {[
-                {label:'👤 Admin', email:'mostafa@gmail.com', pass:'123456', color:'#e0e7ff'},
-                {label:'👨‍💼 Manager', email:'laila@gmail.com', pass:'123456', color:'#dcfce7'},
-                {label:'🧑 Employé', email:'ahmed@gmail.com', pass:'123456', color:'#fef3c7'},
-              ].map(acc => (
-                <button key={acc.email}
-                  type="button"
-                  onClick={() => fillDemo(acc.email, acc.pass)}
-                  style={{
-                    background:acc.color,border:'none',borderRadius:8,
-                    padding:'8px 14px',cursor:'pointer',textAlign:'left',
-                    fontSize:12,fontWeight:600,color:'var(--gray-700)',
-                    display:'flex',justifyContent:'space-between',
-                    transition:'opacity 0.15s',
-                  }}
-                >
-                  <span>{acc.label}</span>
-                  <span style={{color:'var(--gray-400)',fontFamily:'var(--font-mono)'}}>{acc.email}</span>
-                </button>
-              ))}
-            </div>
-          </div>
         </div>
       </div>
     </div>
