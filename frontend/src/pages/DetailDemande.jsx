@@ -42,6 +42,23 @@ export default function DetailDemande() {
     } finally { setSaving(false); }
   };
 
+  const handleDownloadPdf = async () => {
+    try {
+      toast.loading('Génération du PDF...', { id: 'pdf-loading' });
+      const res = await demandeService.exportPdf(id);
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `demande_${id}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      toast.success('PDF téléchargé !', { id: 'pdf-loading' });
+    } catch (err) {
+      toast.error('Erreur lors du téléchargement du PDF', { id: 'pdf-loading' });
+    }
+  };
+
   if (loading) return (
     <div style={{display:'flex',justifyContent:'center',padding:80}}>
       <span className="spinner" style={{width:36,height:36,borderWidth:3,color:'var(--primary)'}} />
@@ -78,7 +95,7 @@ export default function DetailDemande() {
               <Edit2 size={15} /> Modifier
             </Link>
           )}
-          <button className="btn btn-secondary" onClick={() => window.open(`/api/demandes/${id}/pdf`, '_blank')}>
+          <button className="btn btn-secondary" onClick={handleDownloadPdf}>
             <Download size={15} /> PDF
           </button>
         </div>

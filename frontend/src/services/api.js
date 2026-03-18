@@ -44,6 +44,7 @@ export const demandeService = {
   traiter: (id, data) => api.put(`/demandes/${id}/traiter`, data),
   stats: () => api.get('/demandes/statistiques'),
   pdfUrl: (id) => `/api/demandes/${id}/pdf`,
+  exportPdf: (id) => api.get(`/demandes/${id}/pdf`, { responseType: 'blob' }),
   archiver: () => api.post('/demandes/archiver'),
 };
 
