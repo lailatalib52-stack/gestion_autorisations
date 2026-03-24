@@ -13,6 +13,7 @@ class NotificationController extends Controller
     public function index(Request $request)
     {
         $notifications = Notification::where('user_id', $request->user()->id)
+            ->where('lu', false)
             ->with('demande:id,type,statut')
             ->orderBy('created_at', 'desc')
             ->paginate(20);
@@ -40,9 +41,9 @@ class NotificationController extends Controller
         $notif = Notification::where('user_id', $request->user()->id)
             ->findOrFail($id);
 
-        $notif->update(['lu' => true]);
+        $notif->delete();
 
-        return response()->json(['message' => 'Notification marquée comme lue.']);
+        return response()->json(['message' => 'Notification supprimée.']);
     }
 
     /**
@@ -52,8 +53,8 @@ class NotificationController extends Controller
     {
         Notification::where('user_id', $request->user()->id)
             ->where('lu', false)
-            ->update(['lu' => true]);
+            ->delete();
 
-        return response()->json(['message' => 'Toutes les notifications marquées comme lues.']);
+        return response()->json(['message' => 'Toutes les notifications ont été supprimées.']);
     }
 }

@@ -29,13 +29,15 @@ export default function Notifications() {
 
   const marquerLue = async (id) => {
     await notifService.marquerLue(id);
-    setNotifs(prev => prev.map(n => n.id === id ? {...n, lu: true} : n));
+    setNotifs(prev => prev.filter(n => n.id !== id));
+    window.dispatchEvent(new CustomEvent('notifications-updated'));
   };
 
   const marquerToutes = async () => {
     await notifService.marquerToutesLues();
-    setNotifs(prev => prev.map(n => ({...n, lu: true})));
-    toast.success('Toutes les notifications marquées comme lues.');
+    setNotifs([]);
+    toast.success('Toutes les notifications ont été supprimées.');
+    window.dispatchEvent(new CustomEvent('notifications-updated'));
   };
 
   const unread = notifs.filter(n => !n.lu).length;

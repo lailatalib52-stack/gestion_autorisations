@@ -9,6 +9,7 @@ export default function Profil() {
   const [tab, setTab] = useState('info');
   const [form, setForm] = useState({
     name: user?.name || '',
+    email: user?.email || '',
     telephone: user?.telephone || '',
   });
   const [pwForm, setPwForm] = useState({ current_password:'', new_password:'', new_password_confirmation:'' });
@@ -129,9 +130,15 @@ export default function Profil() {
               <label className="form-label" style={{display:'flex',alignItems:'center',gap:6}}>
                 <Mail size={14} /> Email
               </label>
-              <input className="form-input" value={user?.email} disabled
-                style={{background:'var(--gray-50)',color:'var(--gray-400)',cursor:'not-allowed'}} />
-              <span style={{fontSize:11,color:'var(--gray-400)'}}>L'email ne peut pas être modifié.</span>
+              <input className="form-input" value={form.email}
+                disabled={user?.role !== 'admin'}
+                style={user?.role !== 'admin' ? {background:'var(--gray-50)',color:'var(--gray-400)',cursor:'not-allowed'} : {}}
+                onChange={e => setForm(p=>({...p,email:e.target.value}))} />
+              <span style={{fontSize:11,color:'var(--gray-400)'}}>
+                {user?.role === 'admin' 
+                  ? 'Cet email sera utilisé pour vous connecter.' 
+                  : "L'email ne peut pas être modifié par un employé."}
+              </span>
             </div>
 
             <div className="form-group">

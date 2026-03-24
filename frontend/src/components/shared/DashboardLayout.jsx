@@ -13,14 +13,20 @@ export default function DashboardLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [notifCount, setNotifCount] = useState(0);
 
-  useEffect(() => {
+  const updateCount = () => {
     notifService.nonLues()
       .then(res => setNotifCount(res.data.count))
       .catch(() => { });
-    const interval = setInterval(() => {
-      notifService.nonLues().then(res => setNotifCount(res.data.count)).catch(() => { });
-    }, 30000);
-    return () => clearInterval(interval);
+  };
+
+  useEffect(() => {
+    updateCount();
+    window.addEventListener('notifications-updated', updateCount);
+    const interval = setInterval(updateCount, 30000);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('notifications-updated', updateCount);
+    };
   }, []);
 
   const handleLogout = async () => {

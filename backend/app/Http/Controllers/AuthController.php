@@ -95,12 +95,19 @@ class AuthController extends Controller
     {
         $user = $request->user();
 
-        $request->validate([
+        $rules = [
             'name' => 'sometimes|string|max:255',
             'telephone' => 'sometimes|string|max:20',
             'current_password' => 'required_with:new_password',
             'new_password' => 'sometimes|string|min:6|confirmed',
-        ]);
+        ];
+
+        // Seul l'admin peut modifier l'email
+        if ($user->role === 'admin') {
+            $rules['email'] = 'sometimes|email|unique:users,email,' . $user->id;
+        }
+
+        $request->validate($rules);
 
         if ($request->filled('current_password')) {
             if (!Hash::check($request->current_password, $user->password)) {
@@ -111,7 +118,12 @@ class AuthController extends Controller
             $user->password = Hash::make($request->new_password);
         }
 
-        $user->fill($request->only(['name', 'telephone']));
+        $allowedFields = ['name', 'telephone'];
+        if ($user->role === 'admin') {
+            $allowedFields[] = 'email';
+        }
+
+        $user->fill($request->only($allowedFields));
         $user->save();
 
         return response()->json([
