@@ -2,7 +2,9 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { notifService } from '../services/api.js';
 import toast from 'react-hot-toast';
-import { Bell, CheckCheck, ExternalLink } from 'lucide-react';
+import { format, parseISO } from 'date-fns';
+import { fr } from 'date-fns/locale';
+import { Bell, CheckCheck, ExternalLink, Trash2 } from 'lucide-react';
 
 const TYPE_STYLES = {
   success: { bg:'var(--success-bg)', color:'var(--success)', icon:'✅' },
@@ -29,7 +31,7 @@ export default function Notifications() {
 
   const marquerLue = async (id) => {
     await notifService.marquerLue(id);
-    setNotifs(prev => prev.filter(n => n.id !== id));
+    setNotifs(prev => prev.map(n => n.id === id ? { ...n, lu: true } : n));
     window.dispatchEvent(new CustomEvent('notifications-updated'));
   };
 
@@ -69,49 +71,34 @@ export default function Notifications() {
           </div>
         </div>
       ) : (
-        <div style={{display:'flex',flexDirection:'column',gap:10}}>
+        <div style={{display:'flex',flexDirection:'column',gap:12}}>
           {notifs.map(n => {
             const style = TYPE_STYLES[n.type] || TYPE_STYLES.info;
             return (
               <div key={n.id}
-                className="card"
-                style={{
-                  padding:'16px 20px',
-                  borderLeft:`4px solid ${style.color}`,
-                  opacity: n.lu ? 0.7 : 1,
-                  cursor: !n.lu ? 'pointer' : 'default',
-                  transition:'opacity 0.2s',
-                }}
+                className={`notif-item ${n.lu ? 'read' : ''}`}
                 onClick={() => !n.lu && marquerLue(n.id)}
               >
-                <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:12}}>
-                  <div style={{display:'flex',alignItems:'flex-start',gap:12}}>
-                    <span style={{fontSize:20,lineHeight:1}}>{style.icon}</span>
-                    <div>
-                      <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:3}}>
-                        <span style={{fontWeight:700,fontSize:14,color:'var(--gray-900)'}}>{n.titre}</span>
-                        {!n.lu && (
-                          <span style={{width:7,height:7,borderRadius:'50%',background:'var(--primary)',display:'inline-block'}} />
-                        )}
-                      </div>
-                      <p style={{fontSize:13,color:'var(--gray-600)',lineHeight:1.5}}>{n.message}</p>
-                      <span style={{fontSize:11,color:'var(--gray-400)',marginTop:4,display:'block'}}>
-                        {new Date(n.created_at).toLocaleDateString('fr-FR',{
-                          day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'
-                        })}
-                      </span>
-                    </div>
+                <div style={{fontSize:22}}>{style.icon}</div>
+                <div style={{flex:1}}>
+                  <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:4}}>
+                    <span style={{fontWeight:700,fontSize:14,color:'var(--gray-900)'}}>{n.titre}</span>
+                    {!n.lu && <div className="notif-dot" />}
                   </div>
-                  {n.demande_id && (
-                    <Link to={`/demandes/${n.demande_id}`}
-                      className="btn btn-ghost btn-sm btn-icon"
-                      style={{flexShrink:0}}
-                      title="Voir la demande"
-                      onClick={e => e.stopPropagation()}>
-                      <ExternalLink size={14} />
-                    </Link>
-                  )}
+                  <p style={{fontSize:13,color:'var(--gray-600)',lineHeight:1.5}}>{n.message}</p>
+                  <span style={{fontSize:11,color:'var(--gray-400)',marginTop:6,display:'block',fontWeight:500}}>
+                    {n.created_at ? format(parseISO(n.created_at), 'd MMMM yyyy à HH:mm', { locale: fr }) : '-'}
+                  </span>
                 </div>
+                {n.demande_id && (
+                  <Link to={`/demandes/${n.demande_id}`}
+                    className="btn btn-ghost btn-sm btn-icon"
+                    style={{color:'var(--primary)'}}
+                    title="Voir la demande"
+                    onClick={e => e.stopPropagation()}>
+                    <ExternalLink size={15} />
+                  </Link>
+                )}
               </div>
             );
           })}
