@@ -5,6 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property \Carbon\Carbon $date_debut
+ * @property \Carbon\Carbon $date_fin
+ * @property \Carbon\Carbon $date_traitement
+ * @property int $duree
+ */
 class Demande extends Model
 {
     use HasFactory;
@@ -22,6 +28,8 @@ class Demande extends Model
         'date_traitement',
         'is_archived',
     ];
+
+    protected $appends = ['duree', 'type_libelle'];
 
     protected $casts = [
         'date_debut' => 'date',
@@ -79,6 +87,7 @@ class Demande extends Model
 
     public function getDureeAttribute(): int
     {
+        if (!$this->date_debut || !$this->date_fin) return 0;
         return $this->date_debut->diffInDays($this->date_fin) + 1;
     }
 

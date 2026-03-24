@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { demandeService } from '../services/api.js';
 import { useAuth } from '../context/AuthContext.jsx';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
@@ -175,7 +175,8 @@ export default function Dashboard() {
                     <td style={{ fontWeight: 600 }}>{d.employe?.name || '-'}</td>
                     <td>{TYPE_LABELS[d.type] || d.type}</td>
                     <td style={{ fontSize: 12, fontFamily: 'var(--font-mono)', color: 'var(--gray-500)' }}>
-                      {d.date_debut} → {d.date_fin}
+                      {d.date_debut ? format(parseISO(d.date_debut), 'd MMM', { locale: fr }) : ''} → {d.date_fin ? format(parseISO(d.date_fin), 'd MMM yyyy', { locale: fr }) : ''}
+                      <span style={{ marginLeft: 8, fontWeight: 700, color: 'var(--gray-400)' }}>({d.duree} j)</span>
                     </td>
                     <td>
                       <span className={`badge badge-${d.statut}`}>

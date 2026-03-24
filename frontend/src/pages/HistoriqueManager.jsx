@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { demandeService } from '../services/api.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import toast from 'react-hot-toast';
+import { format, parseISO } from 'date-fns';
+import { fr } from 'date-fns/locale';
 import { Eye, Filter, Download, Clock, Search } from 'lucide-react';
 
 const TYPE_LABELS = {
@@ -118,12 +120,12 @@ export default function HistoriqueManager() {
                         </span>
                       </td>
                       <td style={{ fontSize: 12, fontFamily: 'var(--font-mono)', color: 'var(--gray-600)' }}>
-                        {d.date_debut} → {d.date_fin}
+                        {d.date_debut ? format(parseISO(d.date_debut), 'd MMM', { locale: fr }) : ''} → {d.date_fin ? format(parseISO(d.date_fin), 'd MMM yyyy', { locale: fr }) : ''}
                       </td>
-                      <td style={{ fontSize: 13, fontWeight: 600 }}>{d.duree}j</td>
+                      <td style={{ fontSize: 13, fontWeight: 600 }}>{d.duree} j</td>
                       <td><span className={`badge badge-${d.statut}`}>{STATUT_LABEL[d.statut]}</span></td>
                       <td style={{ fontSize: 12, color: 'var(--gray-400)' }}>
-                        {d.date_traitement ? new Date(d.date_traitement).toLocaleDateString('fr-FR') : '—'}
+                        {d.date_traitement ? format(parseISO(d.date_traitement), 'd MMM yyyy', { locale: fr }) : '—'}
                       </td>
                       <td>
                         <div style={{ display: 'flex', gap: 4 }}>

@@ -3,6 +3,8 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { demandeService } from '../services/api.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import toast from 'react-hot-toast';
+import { format, parseISO } from 'date-fns';
+import { fr } from 'date-fns/locale';
 import { ArrowLeft, Download, Edit2, CheckCircle, XCircle, MessageSquare } from 'lucide-react';
 
 const TYPE_LABELS = {
@@ -70,12 +72,12 @@ export default function DetailDemande() {
 
   const INFO = [
     { label: 'Type de demande', value: TYPE_LABELS[demande.type] || demande.type },
-    { label: 'Date de début', value: demande.date_debut },
-    { label: 'Date de fin', value: demande.date_fin },
+    { label: 'Date de début', value: demande.date_debut ? format(parseISO(demande.date_debut), 'd MMMM yyyy', { locale: fr }) : '-' },
+    { label: 'Date de fin', value: demande.date_fin ? format(parseISO(demande.date_fin), 'd MMMM yyyy', { locale: fr }) : '-' },
     { label: 'Durée', value: `${demande.duree} jour(s)` },
     { label: 'Motif', value: demande.motif },
-    { label: 'Créée le', value: new Date(demande.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }) },
-    demande.date_traitement && { label: 'Traitée le', value: new Date(demande.date_traitement).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }) },
+    { label: 'Créée le', value: demande.created_at ? format(parseISO(demande.created_at), 'd MMMM yyyy à HH:mm', { locale: fr }) : '-' },
+    demande.date_traitement && { label: 'Traitée le', value: format(parseISO(demande.date_traitement), 'd MMMM yyyy à HH:mm', { locale: fr }) },
     { label: 'Manager', value: demande.manager?.name || '—' },
   ].filter(Boolean);
 

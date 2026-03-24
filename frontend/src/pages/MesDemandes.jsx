@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { demandeService } from '../services/api.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import toast from 'react-hot-toast';
+import { format, parseISO } from 'date-fns';
+import { fr } from 'date-fns/locale';
 import { Plus, Eye, Edit2, Trash2, Search, Filter, Download } from 'lucide-react';
 
 const TYPE_LABELS = {
@@ -139,12 +141,16 @@ export default function MesDemandes() {
                           {TYPE_LABELS[d.type] || d.type}
                         </span>
                       </td>
-                      <td style={{fontSize:13,fontFamily:'var(--font-mono)'}}>{d.date_debut}</td>
-                      <td style={{fontSize:13,fontFamily:'var(--font-mono)'}}>{d.date_fin}</td>
-                      <td style={{fontSize:13}}>{d.duree}j</td>
+                      <td style={{fontSize:13, fontFamily:'var(--font-mono)'}}>
+                        {d.date_debut ? format(parseISO(d.date_debut), 'd MMM yyyy', { locale: fr }) : '-'}
+                      </td>
+                      <td style={{fontSize:13, fontFamily:'var(--font-mono)'}}>
+                        {d.date_fin ? format(parseISO(d.date_fin), 'd MMM yyyy', { locale: fr }) : '-'}
+                      </td>
+                      <td style={{fontSize:13, fontWeight: 600}}>{d.duree} j</td>
                       <td><span className={`badge badge-${d.statut}`}>{STATUT_LABEL[d.statut]}</span></td>
-                      <td style={{fontSize:12,color:'var(--gray-400)'}}>
-                        {new Date(d.created_at).toLocaleDateString('fr-FR')}
+                      <td style={{fontSize:12, color:'var(--gray-400)'}}>
+                        {d.created_at ? format(parseISO(d.created_at), 'd MMM yyyy', { locale: fr }) : '-'}
                       </td>
                       <td>
                         <div style={{display:'flex',gap:4}}>
