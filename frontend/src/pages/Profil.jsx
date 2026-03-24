@@ -28,7 +28,7 @@ export default function Profil() {
       await refreshUser();
       toast.success('Profil mis à jour !');
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Erreur');
+      toast.error(err.friendlyMessage || 'Erreur');
     } finally { setSaving(false); }
   };
 

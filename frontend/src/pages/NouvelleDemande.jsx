@@ -70,7 +70,7 @@ export default function NouvelleDemande({ editMode }) {
       }
       navigate('/demandes');
     } catch (err) {
-      const msg = err.response?.data?.message || 'Erreur lors de la soumission.';
+      const msg = err.friendlyMessage || 'Erreur lors de la soumission.';
       const apiErrors = err.response?.data?.errors || {};
       setErrors(apiErrors);
       toast.error(msg);

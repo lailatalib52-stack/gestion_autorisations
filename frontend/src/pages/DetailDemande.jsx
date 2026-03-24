@@ -40,7 +40,7 @@ export default function DetailDemande() {
       setShowForm(false);
       load();
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Erreur');
+      toast.error(err.friendlyMessage || 'Erreur');
     } finally { setSaving(false); }
   };
 

@@ -23,7 +23,7 @@ export default function Notifications() {
     setLoading(true);
     notifService.list({ page: p })
       .then(res => { setNotifs(res.data.data); setMeta(res.data); setPage(p); })
-      .catch(() => toast.error('Erreur'))
+      .catch(err => toast.error(err.friendlyMessage || 'Erreur'))
       .finally(() => setLoading(false));
   };
 

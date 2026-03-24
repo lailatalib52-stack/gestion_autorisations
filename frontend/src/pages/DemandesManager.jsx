@@ -29,7 +29,7 @@ export default function DemandesManager() {
     setLoading(true);
     demandeService.list({ page: p, ...filters })
       .then(res => { setDemandes(res.data.data); setMeta(res.data); setPage(p); })
-      .catch(() => toast.error('Erreur de chargement'))
+      .catch(err => toast.error(err.friendlyMessage || 'Erreur de chargement'))
       .finally(() => setLoading(false));
   };
 
@@ -48,8 +48,8 @@ export default function DemandesManager() {
       setComment('');
       load(page);
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Erreur');
-    } finally { setSaving(false); }
+      toast.error(err.friendlyMessage || 'Erreur');
+    } finally { setActionLoading(null); }
   };
 
   return (

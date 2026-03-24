@@ -33,7 +33,7 @@ export default function HistoriqueManager() {
         setMeta(res.data); 
         setPage(p); 
       })
-      .catch(() => toast.error('Erreur de chargement'))
+      .catch(err => toast.error(err.friendlyMessage || 'Erreur de chargement'))
       .finally(() => setLoading(false));
   };
 

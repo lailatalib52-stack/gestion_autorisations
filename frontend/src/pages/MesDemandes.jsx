@@ -32,7 +32,7 @@ export default function MesDemandes() {
         setMeta(res.data);
         setPage(p);
       })
-      .catch(() => toast.error('Erreur de chargement'))
+      .catch(err => toast.error(err.friendlyMessage || 'Erreur de chargement'))
       .finally(() => setLoading(false));
   };
 
@@ -46,8 +46,8 @@ export default function MesDemandes() {
       setCancelId(null);
       load(page);
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Erreur');
-    } finally { setCancelling(false); }
+      toast.error(err.friendlyMessage || 'Erreur');
+    } finally { setCancelling(null); }
   };
 
   const handlePdf = (id) => {

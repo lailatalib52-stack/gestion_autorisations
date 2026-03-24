@@ -24,7 +24,7 @@ export default function GestionUtilisateurs() {
     setLoading(true);
     userService.list({ page: p, search, role: roleFilter })
       .then(res => { setUsers(res.data.data); setMeta(res.data); setPage(p); })
-      .catch(() => toast.error('Erreur'))
+      .catch(err => toast.error(err.friendlyMessage || 'Erreur'))
       .finally(() => setLoading(false));
   };
 
@@ -55,7 +55,7 @@ export default function GestionUtilisateurs() {
       setModal(null);
       load(page);
     } catch (err) {
-      const msg = err.response?.data?.message || 'Erreur';
+      const msg = err.friendlyMessage || 'Erreur';
       toast.error(msg);
     } finally { setSaving(false); }
   };
@@ -68,7 +68,7 @@ export default function GestionUtilisateurs() {
       setModal(null);
       load(page);
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Erreur');
+      toast.error(err.friendlyMessage || 'Erreur');
     } finally { setSaving(false); }
   };
 
@@ -77,7 +77,7 @@ export default function GestionUtilisateurs() {
       const res = await userService.toggleActive(u.id);
       toast.success(res.data.message);
       load(page);
-    } catch { toast.error('Erreur'); }
+    } catch (err) { toast.error(err.friendlyMessage || 'Erreur'); }
   };
 
   const set = (k, v) => setForm(p => ({...p, [k]: v}));

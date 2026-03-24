@@ -20,7 +20,7 @@ export default function LoginPage() {
       toast.success('Connexion réussie !');
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Erreur de connexion.');
+      setError(err.friendlyMessage || 'Erreur de connexion.');
     } finally {
       setLoading(false);
     }

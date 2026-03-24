@@ -13,15 +13,26 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Handle 401 globally
+// Handle errors globally
 api.interceptors.response.use(
   (res) => res,
   (err) => {
+    // Session expired
     if (err.response?.status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      window.location.href = '/login';
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
     }
+    
+    // Extract a user-friendly error message
+    const data = err.response?.data;
+    const message = data?.message || data?.error || 'Une erreur est survenue.';
+    
+    // Attach it to the error object for easier access
+    err.friendlyMessage = message;
+    
     return Promise.reject(err);
   }
 );
