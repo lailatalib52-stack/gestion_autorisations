@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext.jsx';
 import { notifService } from '../../services/api.js';
 import {
   LayoutDashboard, FileText, Users, Bell, User, LogOut,
-  ClipboardList, Menu, X, ChevronRight, Settings,
+  ClipboardList, Menu, X, ChevronRight, Settings, Clock,
 } from 'lucide-react';
 
 export default function DashboardLayout() {
@@ -40,6 +40,7 @@ export default function DashboardLayout() {
     { to: '/demandes/nouvelle', icon: ClipboardList, label: 'Nouvelle Demande', roles: ['employe'] },
     { to: '/demandes', icon: FileText, label: 'Toutes les Demandes', roles: ['admin'] },
     { to: '/manager/demandes', icon: ClipboardList, label: 'Demandes à Traiter', roles: ['manager', 'admin'] },
+    { to: '/manager/historique', icon: Clock, label: 'Historique', roles: ['manager', 'admin'] },
     { to: '/admin/utilisateurs', icon: Users, label: 'Utilisateurs', roles: ['admin'] },
     { to: '/notifications', icon: Bell, label: 'Notifications', roles: ['employe', 'manager', 'admin'] },
     { to: '/profil', icon: User, label: 'Mon Profil', roles: ['employe', 'manager', 'admin'] },

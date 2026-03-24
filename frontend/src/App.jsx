@@ -7,6 +7,7 @@ import MesDemandes from './pages/MesDemandes.jsx';
 import NouvelleDemande from './pages/NouvelleDemande.jsx';
 import DetailDemande from './pages/DetailDemande.jsx';
 import DemandesManager from './pages/DemandesManager.jsx';
+import HistoriqueManager from './pages/HistoriqueManager.jsx';
 import GestionUtilisateurs from './pages/GestionUtilisateurs.jsx';
 import Notifications from './pages/Notifications.jsx';
 import Profil from './pages/Profil.jsx';
@@ -48,6 +49,11 @@ export default function App() {
         <Route path="manager/demandes" element={
           <PrivateRoute roles={['manager', 'admin']}>
             <DemandesManager />
+          </PrivateRoute>
+        } />
+        <Route path="manager/historique" element={
+          <PrivateRoute roles={['manager', 'admin']}>
+            <HistoriqueManager />
           </PrivateRoute>
         } />
         <Route path="admin/utilisateurs" element={
