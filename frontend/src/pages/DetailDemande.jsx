@@ -4,6 +4,7 @@ import { demandeService } from '../services/api.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import toast from 'react-hot-toast';
 import { ArrowLeft, Download, Edit2, CheckCircle, XCircle, MessageSquare } from 'lucide-react';
+import SignaturePad from '../components/shared/SignaturePad.jsx';
 
 const TYPE_LABELS = {
   conge_annuel:'Congé Annuel', conge_maladie:'Congé Maladie',
@@ -19,6 +20,8 @@ export default function DetailDemande() {
   const [loading, setLoading] = useState(true);
   const [traitement, setTraitement] = useState({ statut:'', commentaire_manager:'' });
   const [saving, setSaving] = useState(false);
+  const [signature, setSignature] = useState('');
+  const [cachet, setCachet] = useState('');
   const [showForm, setShowForm] = useState(false);
 
   const load = () => {
@@ -32,8 +35,29 @@ export default function DetailDemande() {
 
   const handleTraiter = async (statut) => {
     setSaving(true);
+    let finalCachet = cachet;
+    if (cachet === 'GENERATE') {
+      const canvas = document.createElement('canvas');
+      canvas.width = 200; canvas.height = 200;
+      const ctx = canvas.getContext('2d');
+      ctx.strokeStyle = '#1a3c5e'; ctx.lineWidth = 4;
+      ctx.beginPath(); ctx.arc(100, 100, 80, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(100, 100, 72, 0, Math.PI * 2); ctx.stroke();
+      ctx.font = 'bold 16px Arial'; ctx.fillStyle = '#1a3c5e'; ctx.textAlign = 'center';
+      ctx.fillText('APPROUVÉ', 100, 90);
+      ctx.font = '12px Arial';
+      ctx.fillText(new Date().toLocaleDateString(), 100, 115);
+      ctx.fillText('DIRECTION GÉNÉRALE', 100, 135);
+      finalCachet = canvas.toDataURL('image/png');
+    }
+
     try {
-      await demandeService.traiter(id, { statut, commentaire_manager: traitement.commentaire_manager });
+      await demandeService.traiter(id, { 
+        statut, 
+        commentaire_manager: traitement.commentaire_manager,
+        signature: signature,
+        cachet: finalCachet
+      });
       toast.success(`Demande ${statut === 'acceptee' ? 'acceptée' : 'refusée'} !`);
       setShowForm(false);
       load();
@@ -95,9 +119,11 @@ export default function DetailDemande() {
               <Edit2 size={15} /> Modifier
             </Link>
           )}
-          <button className="btn btn-secondary" onClick={handleDownloadPdf}>
-            <Download size={15} /> PDF
-          </button>
+          {demande.statut === 'acceptee' && (
+            <button className="btn btn-secondary" onClick={handleDownloadPdf}>
+              <Download size={15} /> PDF
+            </button>
+          )}
         </div>
       </div>
 
@@ -201,14 +227,28 @@ export default function DetailDemande() {
             />
           </div>
           <div style={{display:'flex',gap:12}}>
-            <button className="btn btn-success" disabled={saving} onClick={() => handleTraiter('acceptee')} style={{flex:1,justifyContent:'center'}}>
-              {saving ? <span className="spinner" style={{width:16,height:16,borderWidth:2}} /> : <CheckCircle size={16} />}
-              Accepter
-            </button>
-            <button className="btn btn-danger" disabled={saving} onClick={() => handleTraiter('refusee')} style={{flex:1,justifyContent:'center'}}>
-              {saving ? <span className="spinner" style={{width:16,height:16,borderWidth:2}} /> : <XCircle size={16} />}
-              Refuser
-            </button>
+            <div style={{flex:1, display:'flex', flexDirection:'column', gap:8}}>
+              <label className="form-label" style={{fontSize:11}}>Signature du Manager</label>
+              <SignaturePad onSave={setSignature} onClear={() => setSignature('')} />
+              <button className="btn btn-success" disabled={saving || !signature || !cachet} onClick={() => handleTraiter('acceptee')} style={{width:'100%',justifyContent:'center',marginTop:8}}>
+                {saving ? <span className="spinner" style={{width:16,height:16,borderWidth:2}} /> : <CheckCircle size={16} />}
+                Accepter avec signature
+              </button>
+            </div>
+            <div style={{flex:1, display:'flex', flexDirection:'column', gap:8}}>
+              <label className="form-label" style={{fontSize:11}}>Cachet Société</label>
+              <div style={{border:'2px dashed var(--gray-300)', borderRadius:8, height:150, display:'flex', alignItems:'center', justifyContent:'center', background:'#fff', flexDirection:'column', gap:10}}>
+                 <button type="button" className="btn btn-secondary btn-sm" style={{fontSize:11}}
+                   onClick={() => setCachet('GENERATE')}>
+                   Générer le Cachet
+                 </button>
+                 {cachet && <div style={{fontSize:12, color:'var(--success)', fontWeight:600}}>Cachet prêt ✓</div>}
+              </div>
+              <button className="btn btn-danger" disabled={saving} onClick={() => handleTraiter('refusee')} style={{width:'100%',justifyContent:'center',marginTop:8}}>
+                {saving ? <span className="spinner" style={{width:16,height:16,borderWidth:2}} /> : <XCircle size={16} />}
+                Refuser la demande
+              </button>
+            </div>
           </div>
         </div>
       )}

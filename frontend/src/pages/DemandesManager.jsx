@@ -4,6 +4,7 @@ import { demandeService } from '../services/api.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import toast from 'react-hot-toast';
 import { Eye, CheckCircle, XCircle, Filter, Download } from 'lucide-react';
+import SignaturePad from '../components/shared/SignaturePad.jsx';
 
 const TYPE_LABELS = {
   conge_annuel:'Congé Annuel', conge_maladie:'Congé Maladie',
@@ -22,6 +23,8 @@ export default function DemandesManager() {
   const [quickModal, setQuickModal] = useState(null); // { demande, action }
   const [comment, setComment] = useState('');
   const [saving, setSaving] = useState(false);
+  const [signature, setSignature] = useState('');
+  const [cachet, setCachet] = useState('');
 
   const load = (p = 1) => {
     setLoading(true);
@@ -36,14 +39,36 @@ export default function DemandesManager() {
   const handleQuick = async () => {
     if (!quickModal) return;
     setSaving(true);
+    
+    let finalCachet = cachet;
+    if (cachet === 'GENERATE') {
+      // Create a simple circular stamp on a temp canvas
+      const canvas = document.createElement('canvas');
+      canvas.width = 200; canvas.height = 200;
+      const ctx = canvas.getContext('2d');
+      ctx.strokeStyle = '#1a3c5e'; ctx.lineWidth = 4;
+      ctx.beginPath(); ctx.arc(100, 100, 80, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(100, 100, 72, 0, Math.PI * 2); ctx.stroke();
+      ctx.font = 'bold 16px Arial'; ctx.fillStyle = '#1a3c5e'; ctx.textAlign = 'center';
+      ctx.fillText('APPROUVÉ', 100, 90);
+      ctx.font = '12px Arial';
+      ctx.fillText(new Date().toLocaleDateString(), 100, 115);
+      ctx.fillText('DIRECTION GÉNÉRALE', 100, 135);
+      finalCachet = canvas.toDataURL('image/png');
+    }
+
     try {
       await demandeService.traiter(quickModal.demande.id, {
         statut: quickModal.action,
         commentaire_manager: comment,
+        signature: signature,
+        cachet: finalCachet,
       });
       toast.success(`Demande ${quickModal.action === 'acceptee' ? 'acceptée' : 'refusée'} !`);
       setQuickModal(null);
       setComment('');
+      setSignature('');
+      setCachet('');
       load(page);
     } catch (err) {
       toast.error(err.response?.data?.message || 'Erreur');
@@ -155,6 +180,14 @@ export default function DemandesManager() {
                               </button>
                             </>
                           )}
+                          {d.statut === 'acceptee' && (
+                            <button className="btn btn-ghost btn-icon btn-sm" title="PDF" onClick={() => {
+                              const token = localStorage.getItem('token');
+                              window.open(`/api/demandes/${d.id}/pdf?token=${token}`, '_blank');
+                            }}>
+                              <Download size={15} />
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -179,7 +212,7 @@ export default function DemandesManager() {
       {/* Quick action modal */}
       {quickModal && (
         <div className="modal-overlay" onClick={() => setQuickModal(null)}>
-          <div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:480}}>
+          <div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:540}}>
             <div className="modal-header">
               <h3 className="modal-title">
                 {quickModal.action === 'acceptee' ? '✅ Accepter' : '❌ Refuser'} la demande
@@ -191,22 +224,42 @@ export default function DemandesManager() {
                 Demande de <strong>{quickModal.demande.employe?.name}</strong> — {TYPE_LABELS[quickModal.demande.type]}
                 <br/>{quickModal.demande.date_debut} → {quickModal.demande.date_fin}
               </p>
-              <div className="form-group">
+              
+              <div className="form-group" style={{marginBottom:16}}>
                 <label className="form-label">Commentaire (optionnel)</label>
                 <textarea className="form-textarea" rows={2}
                   placeholder="Ajoutez un commentaire ou un avis..."
                   value={comment} onChange={e=>setComment(e.target.value)} />
               </div>
+
+              {quickModal.action === 'acceptee' && (
+                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16,marginTop:10}}>
+                  <div>
+                    <label className="form-label" style={{fontSize:11, fontWeight:700}}>Signature du Manager</label>
+                    <SignaturePad onSave={setSignature} onClear={() => setSignature('')} />
+                  </div>
+                  <div>
+                    <label className="form-label" style={{fontSize:11, fontWeight:700}}>Cachet Société</label>
+                    <div style={{border:'2px dashed var(--gray-300)', borderRadius:8, height:150, display:'flex', alignItems:'center', justifyContent:'center', background:'#f8fafb', flexDirection:'column', gap:10}}>
+                       <button type="button" className="btn btn-secondary btn-sm" style={{fontSize:11}}
+                         onClick={() => setCachet('GENERATE')}>
+                         Générer le Cachet
+                       </button>
+                       {cachet && <div style={{fontSize:12, color:'var(--success)', fontWeight:600}}>Cachet prêt ✓</div>}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
             <div className="modal-footer">
               <button className="btn btn-secondary" onClick={()=>setQuickModal(null)}>Annuler</button>
               <button
                 className={`btn ${quickModal.action==='acceptee'?'btn-success':'btn-danger'}`}
-                disabled={saving}
+                disabled={saving || (quickModal.action === 'acceptee' && (!signature || !cachet))}
                 onClick={handleQuick}
               >
                 {saving ? <span className="spinner" style={{width:16,height:16,borderWidth:2}} /> : null}
-                Confirmer
+                Confirmer {quickModal.action === 'acceptee' ? 'avec Signature' : ''}
               </button>
             </div>
           </div>

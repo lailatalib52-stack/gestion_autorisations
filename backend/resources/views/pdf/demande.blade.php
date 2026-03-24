@@ -124,20 +124,26 @@
 <table class="footer-table">
     <tr>
         <td>
-            <div class="signature-box">
+            <div class="signature-box" style="position:relative;">
                 <div class="sig-label">Signature de l'Employé</div>
                 <div style="font-size:10px; color:#444;">{{ $demande->employe->name }}</div>
             </div>
         </td>
         <td>
-            <div class="signature-box">
+            <div class="signature-box" style="position:relative;">
                 <div class="sig-label">Cachet de la Société</div>
+                @if($demande->cachet)
+                    <img src="{{ $demande->cachet }}" style="position:absolute; top:20px; left:50%; transform:translateX(-50%); max-height:75px; max-width:140px;">
+                @endif
                 <div style="font-size:10px; color:#ccc;">&nbsp;</div>
             </div>
         </td>
         <td>
-            <div class="signature-box">
+            <div class="signature-box" style="position:relative;">
                 <div class="sig-label">Visa du Manager</div>
+                @if($demande->signature)
+                    <img src="{{ $demande->signature }}" style="position:absolute; top:20px; left:50%; transform:translateX(-50%); max-height:75px; max-width:140px;">
+                @endif
                 <div style="font-size:10px; color:#444;">{{ $demande->manager->name ?? '........................' }}</div>
             </div>
         </td>

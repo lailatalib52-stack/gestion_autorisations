@@ -156,9 +156,11 @@ export default function MesDemandes() {
                               <Edit2 size={15} />
                             </Link>
                           )}
-                          <button className="btn btn-ghost btn-icon btn-sm" title="PDF" onClick={() => handlePdf(d.id)}>
-                            <Download size={15} />
-                          </button>
+                          {d.statut === 'acceptee' && (
+                            <button className="btn btn-ghost btn-icon btn-sm" title="PDF" onClick={() => handlePdf(d.id)}>
+                              <Download size={15} />
+                            </button>
+                          )}
                           {user?.role === 'employe' && d.statut === 'en_attente' && (
                             <button className="btn btn-ghost btn-icon btn-sm" title="Annuler"
                               style={{color:'var(--danger)'}}

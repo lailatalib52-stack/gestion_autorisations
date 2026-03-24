@@ -206,11 +206,15 @@ class DemandeController extends Controller
         $request->validate([
             'statut' => 'required|in:acceptee,refusee',
             'commentaire_manager' => 'nullable|string|max:500',
+            'signature' => 'nullable|string',
+            'cachet' => 'nullable|string',
         ]);
 
         $demande->update([
             'statut' => $request->statut,
             'commentaire_manager' => $request->commentaire_manager,
+            'signature' => $request->signature,
+            'cachet' => $request->cachet,
             'date_traitement' => now(),
         ]);
 
