@@ -181,13 +181,11 @@ table.data-table tbody tr:hover { background: var(--gray-50); }
 .modal-overlay {
   position: fixed; inset: 0;
   background: rgba(15,23,42,0.5);
-  backdrop-filter: blur(100%);
+  backdrop-filter: blur(4px);
   display: flex; align-items: center; justify-content: center;
   z-index: 1000;
   padding: 16px;
-  margin: -24px;
   animation: fadeIn 0.15s ease;
-
 }
 .modal {
   background: #fff;
@@ -264,7 +262,7 @@ table.data-table tbody tr:hover { background: var(--gray-50); }
   width: 100%;
 }
 
-.app-layout.sidebar {
+.sidebar {
   width: var(--sidebar-width);
   min-height: 100vh;
   background: #0f172a;
@@ -434,8 +432,8 @@ table.data-table tbody tr:hover { background: var(--gray-50); }
 .page-content { padding: 28px; flex: 1; }
 
 @media (max-width: 768px) {
-  .app-layout.sidebar { transform: translateX(-100%); }
-  .app-layout.sidebar.open { transform: translateX(0); }
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.open { transform: translateX(0); }
   .main-content { margin-left: 0; }
   .page-content { padding: 16px; }
 }
