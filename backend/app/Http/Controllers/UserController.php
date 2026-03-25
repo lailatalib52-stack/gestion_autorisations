@@ -153,12 +153,6 @@ class UserController extends Controller
             abort(403, "Vous ne pouvez supprimer que les membres de votre équipe.");
         }
 
-        if ($user->demandes()->exists()) {
-            return response()->json([
-                'message' => 'Impossible de supprimer : cet utilisateur a des demandes.',
-            ], 422);
-        }
-
         $user->delete();
 
         return response()->json(['message' => 'Utilisateur supprimé.']);
