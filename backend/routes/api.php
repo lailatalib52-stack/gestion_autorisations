@@ -52,8 +52,8 @@ Route::middleware('auth:sanctum')->group(function () {
             ->middleware('role:admin');
     });
 
-    // Gestion Utilisateurs (Admin uniquement)
-    Route::middleware('role:admin')->prefix('users')->group(function () {
+    // Gestion Utilisateurs (Manager & Admin)
+    Route::middleware('role:manager,admin')->prefix('users')->group(function () {
         Route::get('/', [UserController::class, 'index']);
         Route::post('/', [UserController::class, 'store']);
         Route::get('/managers', [UserController::class, 'managers']);

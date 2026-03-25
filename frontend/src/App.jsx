@@ -57,7 +57,7 @@ export default function App() {
           </PrivateRoute>
         } />
         <Route path="admin/utilisateurs" element={
-          <PrivateRoute roles={['admin']}>
+          <PrivateRoute roles={['manager', 'admin']}>
             <GestionUtilisateurs />
           </PrivateRoute>
         } />
