@@ -28,7 +28,17 @@ api.interceptors.response.use(
     
     // Extract a user-friendly error message
     const data = err.response?.data;
-    const message = data?.message || data?.error || 'Une erreur est survenue.';
+    let message = data?.message || data?.error || 'Une erreur est survenue.';
+    
+    // Si c'est une erreur de validation Laravel (422)
+    if (err.response?.status === 422 && data?.errors) {
+      const firstError = Object.values(data.errors)[0][0];
+      message = firstError;
+      
+      // Traduction rapide si c'est une clé brute (cas rare mais possible)
+      if (message === 'validation.unique') message = 'Cette valeur est déjà utilisée (doit être unique).';
+      if (message === 'validation.required') message = 'Ce champ est obligatoire.';
+    }
     
     // Attach it to the error object for easier access
     err.friendlyMessage = message;
