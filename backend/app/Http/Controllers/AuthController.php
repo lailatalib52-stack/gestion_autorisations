@@ -49,6 +49,8 @@ class AuthController extends Controller
                 'departement' => $user->departement,
                 'poste' => $user->poste,
                 'telephone' => $user->telephone,
+                'manager_id' => $user->manager_id,
+                'manager' => $user->manager ? ['id' => $user->manager->id, 'name' => $user->manager->name] : null,
             ],
             'message' => 'Connexion réussie.',
         ]);
@@ -83,6 +85,8 @@ class AuthController extends Controller
                 'departement' => $user->departement,
                 'poste' => $user->poste,
                 'telephone' => $user->telephone,
+                'manager_id' => $user->manager_id,
+                'manager' => $user->manager ? ['id' => $user->manager->id, 'name' => $user->manager->name] : null,
                 'notifications_non_lues' => $notifCount,
             ],
         ]);

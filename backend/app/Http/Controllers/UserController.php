@@ -14,6 +14,12 @@ class UserController extends Controller
     public function index(Request $request)
     {
         $query = User::query();
+        $user = $request->user();
+
+        // Si c'est un manager, il ne voit que son équipe
+        if ($user->role === 'manager') {
+            $query->where('manager_id', $user->id);
+        }
 
         if ($request->filled('role')) {
             $query->where('role', $request->role);
@@ -28,7 +34,7 @@ class UserController extends Controller
             $query->where('is_active', $request->boolean('is_active'));
         }
 
-        $users = $query->orderBy('name')->paginate(10);
+        $users = $query->with('manager')->orderBy('name')->paginate(10);
 
         return response()->json($users);
     }
@@ -46,7 +52,16 @@ class UserController extends Controller
             'departement' => 'nullable|string|max:100',
             'poste' => 'nullable|string|max:100',
             'telephone' => 'nullable|string|max:20',
+            'manager_id' => 'nullable|exists:users,id',
         ]);
+
+        $caller = $request->user();
+        $managerId = $request->manager_id;
+
+        // Si c'est un manager qui crée, il devient le manager par défaut
+        if ($caller->role === 'manager') {
+            $managerId = $caller->id;
+        }
 
         $user = User::create([
             'name' => $request->name,
@@ -56,6 +71,7 @@ class UserController extends Controller
             'departement' => $request->departement,
             'poste' => $request->poste,
             'telephone' => $request->telephone,
+            'manager_id' => $managerId,
             'is_active' => true,
         ]);
 
@@ -86,6 +102,12 @@ class UserController extends Controller
     public function update(Request $request, $id)
     {
         $user = User::findOrFail($id);
+        $caller = $request->user();
+
+        // Restriction manager : seulement son équipe
+        if ($caller->role === 'manager' && $user->manager_id !== $caller->id) {
+            abort(403, "Vous ne pouvez gérer que les membres de votre équipe.");
+        }
 
         $request->validate([
             'name' => 'sometimes|string|max:255',
@@ -96,11 +118,18 @@ class UserController extends Controller
             'telephone' => 'nullable|string|max:20',
             'is_active' => 'sometimes|boolean',
             'password' => 'nullable|string|min:6',
+            'manager_id' => 'nullable|exists:users,id',
         ]);
 
         $data = $request->except('password');
         if ($request->filled('password')) {
             $data['password'] = Hash::make($request->password);
+        }
+
+        // Un manager ne peut pas changer le manager de son équipe (lui-même) via cet input
+        if ($caller->role === 'manager') {
+            unset($data['manager_id']);
+            unset($data['role']); // Un manager ne peut pas promouvoir un employé en admin par ex.
         }
 
         $user->update($data);
@@ -114,9 +143,15 @@ class UserController extends Controller
     /**
      * Supprimer un utilisateur
      */
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
         $user = User::findOrFail($id);
+        $caller = $request->user();
+
+        // Restriction manager
+        if ($caller->role === 'manager' && $user->manager_id !== $caller->id) {
+            abort(403, "Vous ne pouvez supprimer que les membres de votre équipe.");
+        }
 
         if ($user->demandes()->exists()) {
             return response()->json([
@@ -132,9 +167,16 @@ class UserController extends Controller
     /**
      * Activer/Désactiver
      */
-    public function toggleActive($id)
+    public function toggleActive(Request $request, $id)
     {
         $user = User::findOrFail($id);
+        $caller = $request->user();
+
+        // Restriction manager
+        if ($caller->role === 'manager' && $user->manager_id !== $caller->id) {
+            abort(403, "Vous ne pouvez gérer que les membres de votre équipe.");
+        }
+
         $user->is_active = !$user->is_active;
         $user->save();
 

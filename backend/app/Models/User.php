@@ -20,6 +20,7 @@ class User extends Authenticatable
         'poste',
         'telephone',
         'is_active',
+        'manager_id',
     ];
 
     protected $hidden = [
@@ -31,7 +32,19 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
         'is_active' => 'boolean',
+        'manager_id' => 'integer',
     ];
+
+    // Relations
+    public function manager()
+    {
+        return $this->belongsTo(User::class, 'manager_id');
+    }
+
+    public function equipe()
+    {
+        return $this->hasMany(User::class, 'manager_id');
+    }
 
     // Relations
     public function demandes()

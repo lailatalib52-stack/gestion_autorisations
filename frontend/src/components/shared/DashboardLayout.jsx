@@ -41,7 +41,7 @@ export default function DashboardLayout() {
     { to: '/demandes', icon: FileText, label: 'Toutes les Demandes', roles: ['admin'] },
     { to: '/manager/demandes', icon: ClipboardList, label: 'Demandes à Traiter', roles: ['manager', 'admin'] },
     { to: '/manager/historique', icon: History, label: 'Historique', roles: ['manager', 'admin'] },
-    { to: '/admin/utilisateurs', icon: Users, label: 'Utilisateurs', roles: ['admin'] },
+    { to: '/admin/utilisateurs', icon: Users, label: 'Utilisateurs', roles: ['manager', 'admin'] },
     { to: '/notifications', icon: Bell, label: 'Notifications', roles: ['employe', 'manager', 'admin'] },
     { to: '/profil', icon: User, label: 'Mon Profil', roles: ['employe', 'manager', 'admin'] },
   ].filter(item => item.roles.includes(user?.role));

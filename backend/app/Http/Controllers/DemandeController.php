@@ -65,7 +65,9 @@ class DemandeController extends Controller
         ]);
 
         // Trouver un manager si non spécifié
-        $managerId = $request->manager_id;
+        // Utiliser le manager assigné à l'employé par défaut
+        $managerId = $request->manager_id ?: $user->manager_id;
+        
         if (!$managerId) {
             $manager = User::where('role', 'manager')->where('is_active', true)->first();
             $managerId = $manager ? $manager->id : null;

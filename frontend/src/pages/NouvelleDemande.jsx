@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { demandeService, userService } from '../services/api.js';
+import { useAuth } from '../context/AuthContext.jsx';
 import toast from 'react-hot-toast';
 import { ArrowLeft, Save, FileText } from 'lucide-react';
 
@@ -14,6 +15,7 @@ const TYPES = [
 ];
 
 export default function NouvelleDemande({ editMode }) {
+  const { user: currentUser } = useAuth();
   const { id } = useParams();
   const navigate = useNavigate();
   const [form, setForm] = useState({
@@ -25,7 +27,11 @@ export default function NouvelleDemande({ editMode }) {
   const today = new Date().toISOString().split('T')[0];
 
   useEffect(() => {
-    userService.managers().then(res => setManagers(res.data.managers)).catch(()=>{});
+    // Si l'employé n'a pas de manager attribué, on charge la liste pour qu'il puisse en choisir un
+    if (!currentUser?.manager_id) {
+        userService.managers().then(res => setManagers(res.data.managers)).catch(()=>{});
+    }
+    
     if (editMode && id) {
       demandeService.get(id).then(res => {
         const d = res.data.demande;
@@ -184,8 +190,19 @@ export default function NouvelleDemande({ editMode }) {
             {errors.motif && <span className="form-error">{errors.motif}</span>}
           </div>
 
-          {/* Manager */}
-          {managers.length > 0 && (
+          {/* Manager display / selection */}
+          {currentUser?.manager ? (
+            <div className="form-group" style={{background:'var(--gray-50)', padding:12, borderRadius:8, border:'1px solid var(--gray-100)'}}>
+              <label className="form-label" style={{marginBottom:4}}>Manager référent</label>
+              <div style={{display:'flex', alignItems:'center', gap:10}}>
+                <div style={{width:30, height:30, borderRadius:8, background:'var(--primary-bg)', color:'var(--primary)', display:'flex', alignItems:'center', justifyContent:'center', fontWeight:700, fontSize:12}}>
+                  {currentUser.manager.name?.[0].toUpperCase()}
+                </div>
+                <div style={{fontSize:14, fontWeight:600}}>{currentUser.manager.name}</div>
+              </div>
+              <p style={{fontSize:11, color:'var(--gray-400)', marginTop:4}}>Votre demande lui sera automatiquement transmise.</p>
+            </div>
+          ) : managers.length > 0 && (
             <div className="form-group">
               <label className="form-label">Responsable (optionnel)</label>
               <select className="form-select" value={form.manager_id} onChange={e => set('manager_id', e.target.value)}>

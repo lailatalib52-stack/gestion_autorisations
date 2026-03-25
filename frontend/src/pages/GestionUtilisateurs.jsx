@@ -1,15 +1,18 @@
 import { useState, useEffect } from 'react';
 import { userService } from '../services/api.js';
+import { useAuth } from '../context/AuthContext.jsx';
 import toast from 'react-hot-toast';
 import { Plus, Edit2, Trash2, Search, ToggleLeft, ToggleRight, Users } from 'lucide-react';
 
 const ROLES = { employe:'Employé', manager:'Manager', admin:'Admin' };
 const ROLE_COLORS = { employe:'#059669', manager:'#0284c7', admin:'#7c3aed' };
 
-const emptyForm = { name:'', email:'', password:'', role:'employe', departement:'', poste:'', telephone:'', is_active:true };
+const emptyForm = { name:'', email:'', password:'', role:'employe', departement:'', poste:'', telephone:'', is_active:true, manager_id:'' };
 
 export default function GestionUtilisateurs() {
+  const { user: currentUser } = useAuth();
   const [users, setUsers] = useState([]);
+  const [managers, setManagers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('');
@@ -19,6 +22,12 @@ export default function GestionUtilisateurs() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (currentUser?.role === 'admin') {
+      userService.managers().then(res => setManagers(res.data.managers)).catch(()=>{});
+    }
+  }, [currentUser]);
 
   const load = (p = 1) => {
     setLoading(true);
@@ -33,7 +42,17 @@ export default function GestionUtilisateurs() {
   const openCreate = () => { setForm(emptyForm); setSelectedUser(null); setModal('create'); };
   const openEdit = (u) => {
     setSelectedUser(u);
-    setForm({ name:u.name, email:u.email, password:'', role:u.role, departement:u.departement||'', poste:u.poste||'', telephone:u.telephone||'', is_active:u.is_active });
+    setForm({ 
+      name:u.name, 
+      email:u.email, 
+      password:'', 
+      role:u.role, 
+      departement:u.departement||'', 
+      poste:u.poste||'', 
+      telephone:u.telephone||'', 
+      is_active:u.is_active,
+      manager_id: u.manager_id || ''
+    });
     setModal('edit');
   };
 
@@ -131,7 +150,7 @@ export default function GestionUtilisateurs() {
                     <th>Email</th>
                     <th>Rôle</th>
                     <th>Département</th>
-                    <th>Poste</th>
+                    {currentUser?.role === 'admin' && <th>Manager</th>}
                     <th>Statut</th>
                     <th>Actions</th>
                   </tr>
@@ -162,7 +181,15 @@ export default function GestionUtilisateurs() {
                         </span>
                       </td>
                       <td style={{fontSize:13}}>{u.departement || '—'}</td>
-                      <td style={{fontSize:13}}>{u.poste || '—'}</td>
+                      {currentUser?.role === 'admin' && (
+                        <td style={{fontSize:13}}>
+                          {u.manager?.name ? (
+                            <span style={{color:'var(--gray-600)'}}>{u.manager.name}</span>
+                          ) : (
+                            <span style={{color:'var(--gray-300)',fontStyle:'italic'}}>À définir</span>
+                          )}
+                        </td>
+                      )}
                       <td>
                         <span style={{
                           padding:'2px 8px',borderRadius:6,fontSize:12,fontWeight:600,
@@ -231,12 +258,23 @@ export default function GestionUtilisateurs() {
                 </div>
                 <div className="form-group">
                   <label className="form-label">Rôle *</label>
-                  <select className="form-select" value={form.role} onChange={e=>set('role',e.target.value)}>
+                  <select className="form-select" value={form.role} onChange={e=>set('role',e.target.value)} disabled={currentUser?.role !== 'admin'}>
                     <option value="employe">Employé</option>
                     <option value="manager">Manager</option>
-                    <option value="admin">Administrateur</option>
+                    {currentUser?.role === 'admin' && <option value="admin">Administrateur</option>}
                   </select>
                 </div>
+                {currentUser?.role === 'admin' && form.role !== 'admin' && (
+                  <div className="form-group">
+                    <label className="form-label">Manager référent</label>
+                    <select className="form-select" value={form.manager_id} onChange={e=>set('manager_id',e.target.value)}>
+                      <option value="">-- Aucun --</option>
+                      {managers.map(m => (
+                        <option key={m.id} value={m.id}>{m.name} ({m.departement})</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
                 <div className="form-group">
                   <label className="form-label">Département</label>
                   <input className="form-input" value={form.departement} onChange={e=>set('departement',e.target.value)} placeholder="Ex: Informatique" />
