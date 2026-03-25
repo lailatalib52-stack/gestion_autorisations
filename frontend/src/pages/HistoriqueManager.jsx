@@ -120,9 +120,12 @@ export default function HistoriqueManager() {
                         </span>
                       </td>
                       <td style={{ fontSize: 12, fontFamily: 'var(--font-mono)', color: 'var(--gray-600)' }}>
-                        {d.date_debut ? format(parseISO(d.date_debut), 'd MMM', { locale: fr }) : ''} → {d.date_fin ? format(parseISO(d.date_fin), 'd MMM yyyy', { locale: fr }) : ''}
+                        {d.type === 'sortie' 
+                          ? format(parseISO(d.date_debut), 'd MMM yyyy HH:mm', { locale: fr })
+                          : `${d.date_debut ? format(parseISO(d.date_debut), 'd MMM', { locale: fr }) : ''} → ${d.date_fin ? format(parseISO(d.date_fin), 'd MMM yyyy', { locale: fr }) : ''}`
+                        }
                       </td>
-                      <td style={{ fontSize: 13, fontWeight: 600 }}>{d.duree} j</td>
+                      <td style={{ fontSize: 13, fontWeight: 600 }}>{d.type === 'sortie' ? '-' : `${d.duree} j`}</td>
                       <td><span className={`badge badge-${d.statut}`}>{STATUT_LABEL[d.statut]}</span></td>
                       <td style={{ fontSize: 12, color: 'var(--gray-400)' }}>
                         {d.date_traitement ? format(parseISO(d.date_traitement), 'd MMM yyyy', { locale: fr }) : '—'}

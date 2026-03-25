@@ -142,12 +142,12 @@ export default function MesDemandes() {
                         </span>
                       </td>
                       <td style={{fontSize:13, fontFamily:'var(--font-mono)'}}>
-                        {d.date_debut ? format(parseISO(d.date_debut), 'd MMM yyyy', { locale: fr }) : '-'}
+                        {d.date_debut ? format(parseISO(d.date_debut), d.type === 'sortie' ? 'd MMM yyyy HH:mm' : 'd MMM yyyy', { locale: fr }) : '-'}
                       </td>
                       <td style={{fontSize:13, fontFamily:'var(--font-mono)'}}>
-                        {d.date_fin ? format(parseISO(d.date_fin), 'd MMM yyyy', { locale: fr }) : '-'}
+                        {d.type === 'sortie' ? '-' : (d.date_fin ? format(parseISO(d.date_fin), 'd MMM yyyy', { locale: fr }) : '-')}
                       </td>
-                      <td style={{fontSize:13, fontWeight: 600}}>{d.duree} j</td>
+                      <td style={{fontSize:13, fontWeight: 600}}>{d.type === 'sortie' ? '-' : `${d.duree} j`}</td>
                       <td><span className={`badge badge-${d.statut}`}>{STATUT_LABEL[d.statut]}</span></td>
                       <td style={{fontSize:12, color:'var(--gray-400)'}}>
                         {d.created_at ? format(parseISO(d.created_at), 'd MMM yyyy', { locale: fr }) : '-'}

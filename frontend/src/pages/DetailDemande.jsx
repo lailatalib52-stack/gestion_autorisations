@@ -72,9 +72,9 @@ export default function DetailDemande() {
 
   const INFO = [
     { label: 'Type de demande', value: TYPE_LABELS[demande.type] || demande.type },
-    { label: 'Date de début', value: demande.date_debut ? format(parseISO(demande.date_debut), 'd MMMM yyyy', { locale: fr }) : '-' },
-    { label: 'Date de fin', value: demande.date_fin ? format(parseISO(demande.date_fin), 'd MMMM yyyy', { locale: fr }) : '-' },
-    { label: 'Durée', value: `${demande.duree} jour(s)` },
+    { label: 'Date de début', value: demande.date_debut ? format(parseISO(demande.date_debut), demande.type === 'sortie' ? 'd MMMM yyyy à HH:mm' : 'd MMMM yyyy', { locale: fr }) : '-' },
+    demande.type !== 'sortie' && { label: 'Date de fin', value: demande.date_fin ? format(parseISO(demande.date_fin), 'd MMMM yyyy', { locale: fr }) : '-' },
+    demande.type !== 'sortie' && { label: 'Durée', value: `${demande.duree} jour(s)` },
     { label: 'Motif', value: demande.motif },
     { label: 'Créée le', value: demande.created_at ? format(parseISO(demande.created_at), 'd MMMM yyyy à HH:mm', { locale: fr }) : '-' },
     demande.date_traitement && { label: 'Traitée le', value: format(parseISO(demande.date_traitement), 'd MMMM yyyy à HH:mm', { locale: fr }) },

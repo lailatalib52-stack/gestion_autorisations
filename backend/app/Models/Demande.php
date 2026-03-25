@@ -32,8 +32,8 @@ class Demande extends Model
     protected $appends = ['duree', 'type_libelle'];
 
     protected $casts = [
-        'date_debut' => 'date',
-        'date_fin' => 'date',
+        'date_debut' => 'datetime',
+        'date_fin' => 'datetime',
         'date_traitement' => 'datetime',
         'is_archived' => 'boolean',
     ];

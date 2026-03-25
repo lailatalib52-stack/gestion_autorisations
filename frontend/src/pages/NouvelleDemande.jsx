@@ -39,7 +39,19 @@ export default function NouvelleDemande({ editMode }) {
   }, []);
 
   const set = (k, v) => {
-    setForm(p => ({...p, [k]: v}));
+    let newForm = { ...form, [k]: v };
+    
+    // Logic for "sortie" type
+    if (k === 'type' && v === 'sortie') {
+      newForm.date_debut = ''; // Reset to let user pick time
+      newForm.date_fin = today;
+    } else if (k === 'type' && v !== 'sortie' && form.type === 'sortie') {
+      // Reset dates if switching away from sortie
+      newForm.date_debut = '';
+      newForm.date_fin = '';
+    }
+
+    setForm(newForm);
     setErrors(p => ({...p, [k]: ''}));
   };
 
@@ -61,11 +73,17 @@ export default function NouvelleDemande({ editMode }) {
 
     setLoading(true);
     try {
+      let dataToSend = { ...form };
+      if (form.type === 'sortie') {
+        dataToSend.date_debut = `${today} ${form.date_debut}`;
+        dataToSend.date_fin = `${today} 23:59:59`;
+      }
+
       if (editMode) {
-        await demandeService.update(id, form);
+        await demandeService.update(id, dataToSend);
         toast.success('Demande mise à jour avec succès !');
       } else {
-        await demandeService.create(form);
+        await demandeService.create(dataToSend);
         toast.success('Demande soumise avec succès !');
       }
       navigate('/demandes');
@@ -117,24 +135,41 @@ export default function NouvelleDemande({ editMode }) {
             {errors.type && <span className="form-error">{errors.type}</span>}
           </div>
 
-          {/* Dates */}
-          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16}}>
-            <div className="form-group">
-              <label className="form-label">Date de début *</label>
-              <input className="form-input" type="date" min={!editMode ? today : undefined}
-                value={form.date_debut} onChange={e => set('date_debut', e.target.value)} />
+          {/* Dates / Time */}
+          {form.type === 'sortie' ? (
+            <div className="form-group slide-in">
+              <label className="form-label">Heure de sortie * (Date: {today})</label>
+              <input 
+                className="form-input" 
+                type="time" 
+                value={form.date_debut} 
+                onChange={e => set('date_debut', e.target.value)} 
+                required
+              />
+              <span style={{fontSize:12,color:'var(--gray-400)',marginTop:4}}>
+                La date est automatiquement fixée à aujourd'hui.
+              </span>
               {errors.date_debut && <span className="form-error">{errors.date_debut}</span>}
             </div>
-            <div className="form-group">
-              <label className="form-label">Date de fin *</label>
-              <input className="form-input" type="date" min={form.date_debut || (!editMode ? today : undefined)}
-                value={form.date_fin} onChange={e => set('date_fin', e.target.value)} />
-              {errors.date_fin && <span className="form-error">{errors.date_fin}</span>}
+          ) : (
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16}} className="slide-in">
+              <div className="form-group">
+                <label className="form-label">Date de début *</label>
+                <input className="form-input" type="date" min={!editMode ? today : undefined}
+                  value={form.date_debut} onChange={e => set('date_debut', e.target.value)} />
+                {errors.date_debut && <span className="form-error">{errors.date_debut}</span>}
+              </div>
+              <div className="form-group">
+                <label className="form-label">Date de fin *</label>
+                <input className="form-input" type="date" min={form.date_debut || (!editMode ? today : undefined)}
+                  value={form.date_fin} onChange={e => set('date_fin', e.target.value)} />
+                {errors.date_fin && <span className="form-error">{errors.date_fin}</span>}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Duration indicator */}
-          {duree !== null && duree > 0 && (
+          {form.type !== 'sortie' && duree !== null && duree > 0 && (
             <div style={{background:'var(--info-bg)',borderRadius:8,padding:'8px 14px',fontSize:13,color:'var(--info)',fontWeight:600}}>
               📅 Durée calculée : <strong>{duree} jour(s)</strong>
             </div>
