@@ -15,7 +15,7 @@ const TYPE_LABELS = {
   conge_sans_solde: 'Congé Sans Solde', 
   autre: 'Autre',
 };
-const STATUT_LABEL = { en_attente: 'En attente', acceptee: 'Acceptée', refusee: 'Refusée' };
+const STATUT_LABEL = { en_attente: 'En attente', validee_manager: 'Validée (Manager)', refusee_manager: 'Refusée (Manager)', acceptee: 'Acceptée', refusee: 'Refusée' };
 
 export default function HistoriqueManager() {
   const { user } = useAuth();
@@ -62,6 +62,8 @@ export default function HistoriqueManager() {
           value={filters.statut} onChange={e => setFilters(p => ({ ...p, statut: e.target.value }))}>
           <option value="">Tous les statuts</option>
           <option value="acceptee">Acceptée</option>
+          <option value="validee_manager">Validée (Manager)</option>
+          <option value="refusee_manager">Refusée (Manager)</option>
           <option value="refusee">Refusée</option>
           <option value="en_attente">En attente</option>
         </select>

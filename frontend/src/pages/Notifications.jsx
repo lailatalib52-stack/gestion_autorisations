@@ -95,7 +95,7 @@ export default function Notifications() {
                     className="btn btn-ghost btn-sm btn-icon"
                     style={{color:'var(--primary)'}}
                     title="Voir la demande"
-                    onClick={e => e.stopPropagation()}>
+                    onClick={e => { e.stopPropagation(); if (!n.lu) marquerLue(n.id); }}>
                     <ExternalLink size={15} />
                   </Link>
                 )}

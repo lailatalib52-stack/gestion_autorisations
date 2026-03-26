@@ -26,10 +26,15 @@ class DemandeController extends Controller
         }
         // Admin voit tout
 
+        if ($user->isAdmin()) {
+            $query->where('statut', '!=', 'en_attente');
+        }
+
         // Filtres
-        if ($request->filled('statut')) {
+        if ($request->filled('statut') && (!$user->isAdmin() || $request->statut !== 'en_attente')) {
             $query->where('statut', $request->statut);
         }
+
         if ($request->filled('type')) {
             $query->where('type', $request->type);
         }
@@ -201,16 +206,17 @@ class DemandeController extends Controller
         $user = $request->user();
         $demande = Demande::with('employe')->findOrFail($id);
 
-        if (!$user->isManager() && !$user->isAdmin()) {
+        $isManager = $user->isManager() && $demande->manager_id === $user->id;
+        $isAdmin = $user->isAdmin();
+
+        if (!$isManager && !$isAdmin) {
             return response()->json(['message' => 'Accès refusé.'], 403);
         }
 
-        if ($user->isManager() && $demande->manager_id !== $user->id) {
-            return response()->json(['message' => 'Accès refusé.'], 403);
-        }
+        $allowedStatuses = $isManager ? implode(',', ['validee_manager', 'refusee_manager']) : implode(',', ['acceptee', 'refusee']);
 
         $request->validate([
-            'statut' => 'required|in:acceptee,refusee',
+            'statut' => 'required|in:' . $allowedStatuses,
             'commentaire_manager' => 'nullable|string|max:500',
         ]);
 
@@ -220,18 +226,48 @@ class DemandeController extends Controller
             'date_traitement' => now(),
         ]);
 
-        // Notification à l'employé
-        $statutLabel = $request->statut === 'acceptee' ? '✅ Acceptée' : '❌ Refusée';
-        Notification::create([
-            'user_id' => $demande->user_id,
-            'titre' => "Demande {$statutLabel}",
-            'message' => "Votre demande de " . Demande::$types[$demande->type] . " a été {$request->statut}.",
-            'type' => $request->statut === 'acceptee' ? 'success' : 'error',
-            'demande_id' => $demande->id,
-        ]);
+        // Notification à l'employé ou à l'admin
+        if ($request->statut === 'validee_manager') {
+            // Prévient l'admin que le manager a validé
+            $admins = User::where('role', 'admin')->where('is_active', true)->get();
+            foreach ($admins as $admin) {
+                Notification::create([
+                    'user_id' => $admin->id,
+                    'titre' => "Demande pré-validée",
+                    'message' => "La demande de " . Demande::$types[$demande->type] . " pour {$demande->employe->name} a été pré-validée par son manager.",
+                    'type' => 'info',
+                    'demande_id' => $demande->id,
+                ]);
+            }
+            // Peut aussi prévenir l'employé
+            Notification::create([
+                'user_id' => $demande->user_id,
+                'titre' => "Demande pré-validée",
+                'message' => "Votre demande de " . Demande::$types[$demande->type] . " a été validée par votre manager. Elle est en attente de la validation finale (Admin).",
+                'type' => 'info',
+                'demande_id' => $demande->id,
+            ]);
+        } elseif ($request->statut === 'refusee_manager') {
+            Notification::create([
+                'user_id' => $demande->user_id,
+                'titre' => "Demande Refusée",
+                'message' => "Votre demande de " . Demande::$types[$demande->type] . " a été refusée par votre manager.",
+                'type' => 'error',
+                'demande_id' => $demande->id,
+            ]);
+        } else {
+            $statutLabel = $request->statut === 'acceptee' ? '✅ Acceptée' : '❌ Refusée';
+            Notification::create([
+                'user_id' => $demande->user_id,
+                'titre' => "Demande finale {$statutLabel}",
+                'message' => "Votre demande de " . Demande::$types[$demande->type] . " a été {$request->statut} par l'administrateur.",
+                'type' => $request->statut === 'acceptee' ? 'success' : 'error',
+                'demande_id' => $demande->id,
+            ]);
+        }
 
         return response()->json([
-            'message' => "Demande {$request->statut} avec succès.",
+            'message' => "Demande traitée : {$request->statut}.",
             'demande' => $demande->fresh(['employe', 'manager']),
         ]);
     }
@@ -254,8 +290,9 @@ class DemandeController extends Controller
         $stats = [
             'total' => (clone $base)->count(),
             'en_attente' => (clone $base)->where('statut', 'en_attente')->count(),
+            'validee_manager' => (clone $base)->where('statut', 'validee_manager')->count(),
             'acceptees' => (clone $base)->where('statut', 'acceptee')->count(),
-            'refusees' => (clone $base)->where('statut', 'refusee')->count(),
+            'refusees' => (clone $base)->whereIn('statut', ['refusee', 'refusee_manager'])->count(),
         ];
 
         // Répartition par type

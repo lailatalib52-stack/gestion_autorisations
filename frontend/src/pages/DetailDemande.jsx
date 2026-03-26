@@ -108,14 +108,14 @@ export default function DetailDemande() {
       {/* Status banner */}
       <div style={{
         padding: '14px 20px', borderRadius: 12, marginBottom: 20,
-        background: demande.statut === 'acceptee' ? 'var(--success-bg)' : demande.statut === 'refusee' ? 'var(--danger-bg)' : 'var(--warning-bg)',
-        color: demande.statut === 'acceptee' ? 'var(--success)' : demande.statut === 'refusee' ? 'var(--danger)' : 'var(--warning)',
+        background: ['acceptee', 'validee_manager'].includes(demande.statut) ? 'var(--success-bg)' : ['refusee', 'refusee_manager'].includes(demande.statut) ? 'var(--danger-bg)' : 'var(--warning-bg)',
+        color: ['acceptee', 'validee_manager'].includes(demande.statut) ? 'var(--success)' : ['refusee', 'refusee_manager'].includes(demande.statut) ? 'var(--danger)' : 'var(--warning)',
         display: 'flex', alignItems: 'center', gap: 10, fontWeight: 600, fontSize: 14,
       }}>
-        {demande.statut === 'acceptee' && <CheckCircle size={18} />}
-        {demande.statut === 'refusee' && <XCircle size={18} />}
+        {['acceptee', 'validee_manager'].includes(demande.statut) && <CheckCircle size={18} />}
+        {['refusee', 'refusee_manager'].includes(demande.statut) && <XCircle size={18} />}
         {demande.statut === 'en_attente' && <span style={{ fontSize: 18 }}>⏳</span>}
-        {{ en_attente: 'En attente de traitement', acceptee: 'Demande acceptée', refusee: 'Demande refusée' }[demande.statut]}
+        {{ en_attente: 'En attente de traitement', validee_manager: 'Pré-validée (En attente Admin)', refusee_manager: 'Refusée par le manager', acceptee: 'Demande acceptée', refusee: 'Demande refusée' }[demande.statut]}
       </div>
 
       {/* Info employé */}
@@ -191,13 +191,13 @@ export default function DetailDemande() {
       )}
 
       {/* Traitement form */}
-      {(user.role === 'manager' || user.role === 'admin') && demande.statut === 'en_attente' && (
+      {((user.role === 'manager' && demande.statut === 'en_attente') || (user.role === 'admin' && demande.statut === 'validee_manager')) && (
         <div className="card" style={{ padding: '20px 24px' }}>
           <h3 style={{ fontSize: 12, fontWeight: 700, color: 'var(--gray-500)', marginBottom: 16, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
             Traiter cette demande
           </h3>
           <div className="form-group" style={{ marginBottom: 16 }}>
-            <label className="form-label">Commentaire du manager (optionnel)</label>
+            <label className="form-label">Commentaire (optionnel)</label>
             <textarea className="form-textarea" rows={2}
               placeholder="Ajoutez un commentaire ou un avis..."
               value={traitement.commentaire_manager}
@@ -205,11 +205,11 @@ export default function DetailDemande() {
             />
           </div>
           <div style={{ display: 'flex', gap: 12 }}>
-            <button className="btn btn-success" disabled={saving} onClick={() => handleTraiter('acceptee')} style={{ flex: 1, justifyContent: 'center' }}>
+            <button className="btn btn-success" disabled={saving} onClick={() => handleTraiter(user.role === 'manager' ? 'validee_manager' : 'acceptee')} style={{ flex: 1, justifyContent: 'center' }}>
               {saving ? <span className="spinner" style={{ width: 16, height: 16, borderWidth: 2 }} /> : <CheckCircle size={16} />}
-              Accepter
+              Accepter / Approuver
             </button>
-            <button className="btn btn-danger" disabled={saving} onClick={() => handleTraiter('refusee')} style={{ flex: 1, justifyContent: 'center' }}>
+            <button className="btn btn-danger" disabled={saving} onClick={() => handleTraiter(user.role === 'manager' ? 'refusee_manager' : 'refusee')} style={{ flex: 1, justifyContent: 'center' }}>
               {saving ? <span className="spinner" style={{ width: 16, height: 16, borderWidth: 2 }} /> : <XCircle size={16} />}
               Refuser
             </button>

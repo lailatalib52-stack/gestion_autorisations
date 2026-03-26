@@ -12,13 +12,13 @@ const TYPE_LABELS = {
   autorisation_absence: "Autorisation d'Absence", sortie: 'Sortie',
   conge_sans_solde: 'Congé Sans Solde', autre: 'Autre',
 };
-const STATUT_LABEL = { en_attente: 'En attente', acceptee: 'Acceptée', refusee: 'Refusée' };
+const STATUT_LABEL = { en_attente: 'En attente', validee_manager: 'Validée (Manager)', refusee_manager: 'Refusée (Manager)', acceptee: 'Acceptée', refusee: 'Refusée' };
 
 export default function DemandesManager() {
   const { user } = useAuth();
   const [demandes, setDemandes] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filters, setFilters] = useState({ statut: 'en_attente', type: '' });
+  const [filters, setFilters] = useState({ statut: user.role === 'admin' ? 'validee_manager' : 'en_attente', type: '' });
   const [page, setPage] = useState(1);
   const [meta, setMeta] = useState(null);
   const [quickModal, setQuickModal] = useState(null); // { demande, action }
@@ -75,6 +75,8 @@ export default function DemandesManager() {
           value={filters.statut} onChange={e => setFilters(p => ({ ...p, statut: e.target.value }))}>
           <option value="">Tous les statuts</option>
           <option value="en_attente">En attente</option>
+          <option value="validee_manager">Validée (Manager)</option>
+          <option value="refusee_manager">Refusée (Manager)</option>
           <option value="acceptee">Acceptée</option>
           <option value="refusee">Refusée</option>
         </select>
@@ -146,14 +148,28 @@ export default function DemandesManager() {
                           <Link to={`/demandes/${d.id}`} className="btn btn-ghost btn-icon btn-sm" title="Voir">
                             <Eye size={15} />
                           </Link>
-                          {d.statut === 'en_attente' && (
+                          {d.statut === 'en_attente' && user.role === 'manager' && (
                             <>
                               <button className="btn btn-icon btn-sm" title="Accepter"
+                                style={{ background: 'var(--success-bg)', color: 'var(--success)', border: 'none' }}
+                                onClick={() => { setQuickModal({ demande: d, action: 'validee_manager' }); setComment(''); }}>
+                                <CheckCircle size={15} />
+                              </button>
+                              <button className="btn btn-icon btn-sm" title="Refuser"
+                                style={{ background: 'var(--danger-bg)', color: 'var(--danger)', border: 'none' }}
+                                onClick={() => { setQuickModal({ demande: d, action: 'refusee_manager' }); setComment(''); }}>
+                                <XCircle size={15} />
+                              </button>
+                            </>
+                          )}
+                          {d.statut === 'validee_manager' && user.role === 'admin' && (
+                            <>
+                              <button className="btn btn-icon btn-sm" title="Approuver (Admin)"
                                 style={{ background: 'var(--success-bg)', color: 'var(--success)', border: 'none' }}
                                 onClick={() => { setQuickModal({ demande: d, action: 'acceptee' }); setComment(''); }}>
                                 <CheckCircle size={15} />
                               </button>
-                              <button className="btn btn-icon btn-sm" title="Refuser"
+                              <button className="btn btn-icon btn-sm" title="Refuser (Admin)"
                                 style={{ background: 'var(--danger-bg)', color: 'var(--danger)', border: 'none' }}
                                 onClick={() => { setQuickModal({ demande: d, action: 'refusee' }); setComment(''); }}>
                                 <XCircle size={15} />
@@ -187,7 +203,7 @@ export default function DemandesManager() {
           <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 480 }}>
             <div className="modal-header">
               <h3 className="modal-title">
-                {quickModal.action === 'acceptee' ? '✅ Accepter' : '❌ Refuser'} la demande
+                {['acceptee', 'validee_manager'].includes(quickModal.action) ? '✅ Accepter / Approuver' : '❌ Refuser'} la demande
               </h3>
               <button className="btn btn-ghost btn-icon btn-sm" onClick={() => setQuickModal(null)}>✕</button>
             </div>
@@ -206,7 +222,7 @@ export default function DemandesManager() {
             <div className="modal-footer">
               <button className="btn btn-secondary" onClick={() => setQuickModal(null)}>Annuler</button>
               <button
-                className={`btn ${quickModal.action === 'acceptee' ? 'btn-success' : 'btn-danger'}`}
+                className={`btn ${['acceptee', 'validee_manager'].includes(quickModal.action) ? 'btn-success' : 'btn-danger'}`}
                 disabled={saving}
                 onClick={handleQuick}
               >

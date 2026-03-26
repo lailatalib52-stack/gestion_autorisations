@@ -64,6 +64,11 @@ class Demande extends Model
         return $query->where('statut', 'en_attente');
     }
 
+    public function scopeValideeManager($query)
+    {
+        return $query->where('statut', 'validee_manager');
+    }
+
     public function scopeAcceptees($query)
     {
         return $query->where('statut', 'acceptee');

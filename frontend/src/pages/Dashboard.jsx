@@ -47,7 +47,8 @@ export default function Dashboard() {
   const statCards = stats ? [
     { label: 'Total', value: stats.stats.total, icon: FileText, color: '#1e4080', bg: '#e0e7ff' },
     { label: 'En Attente', value: stats.stats.en_attente, icon: Clock, color: '#d97706', bg: '#fef3c7' },
-    { label: 'Acceptées', value: stats.stats.acceptees, icon: CheckCircle, color: '#059669', bg: '#d1fae5' },
+    { label: 'Pré-validées', value: stats.stats.validee_manager || 0, icon: CheckCircle, color: '#0ea5e9', bg: '#e0f2fe' },
+    { label: 'Acceptées (Admin)', value: stats.stats.acceptees, icon: CheckCircle, color: '#059669', bg: '#d1fae5' },
     { label: 'Refusées', value: stats.stats.refusees, icon: XCircle, color: '#dc2626', bg: '#fee2e2' },
   ] : [];
 
@@ -67,8 +68,8 @@ export default function Dashboard() {
     </div>
   );
 
-  const statutColors = { en_attente: 'warning', acceptee: 'acceptee', refusee: 'refusee' };
-  const statutLabel = { en_attente: 'En attente', acceptee: 'Acceptée', refusee: 'Refusée' };
+  const statutColors = { en_attente: 'warning', validee_manager: 'info', refusee_manager: 'danger', acceptee: 'acceptee', refusee: 'refusee' };
+  const statutLabel = { en_attente: 'En attente', validee_manager: 'Validée (Manager)', refusee_manager: 'Refusée (Manager)', acceptee: 'Acceptée', refusee: 'Refusée' };
 
   return (
     <div className="fade-in">
