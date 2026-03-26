@@ -213,6 +213,15 @@ class DemandeController extends Controller
             return response()->json(['message' => 'Accès refusé.'], 403);
         }
 
+        // Logic check for sequential workflow
+        if ($isManager && $demande->statut !== 'en_attente') {
+            return response()->json(['message' => 'Cette demande a déjà été traitée ou n\'est pas en attente de validation manager.'], 422);
+        }
+
+        if ($isAdmin && $demande->statut !== 'validee_manager') {
+            return response()->json(['message' => 'Cette demande n\'a pas encore été validée par le manager.'], 422);
+        }
+
         $allowedStatuses = $isManager ? implode(',', ['validee_manager', 'refusee_manager']) : implode(',', ['acceptee', 'refusee']);
 
         $request->validate([
