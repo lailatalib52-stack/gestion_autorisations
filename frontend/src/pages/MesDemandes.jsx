@@ -8,9 +8,10 @@ import { fr } from 'date-fns/locale';
 import { Plus, Eye, Edit2, Trash2, Search, Filter, Download } from 'lucide-react';
 
 const TYPE_LABELS = {
-  conge_annuel:'Congé Annuel', conge_maladie:'Congé Maladie',
-  autorisation_absence:"Autorisation d'Absence", sortie:'Sortie',
-  conge_sans_solde:'Congé Sans Solde', autre:'Autre',
+  conge: 'Congé',
+  absence: 'Absence',
+  sortie: 'Sortie',
+  conge_exceptionnel: 'Congé Exceptionnel',
 };
 const STATUT_LABEL = { en_attente:'En attente', validee_manager:'Validée (Manager)', refusee_manager:'Refusée (Manager)', acceptee:'Acceptée', refusee:'Refusée' };
 
@@ -59,7 +60,9 @@ export default function MesDemandes() {
     <div className="fade-in">
       <div className="page-header">
         <div>
-          <h1 className="page-title">Mes Demandes</h1>
+          <h1 className="page-title">
+            {user?.role === 'employe' ? 'Mes Demandes' : 'Toutes les Demandes'}
+          </h1>
           <p className="page-subtitle">{meta?.total || 0} demande(s) au total</p>
         </div>
         {user?.role === 'employe' && (

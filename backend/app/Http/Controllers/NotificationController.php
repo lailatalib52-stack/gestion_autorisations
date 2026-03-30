@@ -40,9 +40,9 @@ class NotificationController extends Controller
         $notif = Notification::where('user_id', $request->user()->id)
             ->findOrFail($id);
 
-        $notif->update(['lu' => true]);
-
-        return response()->json(['message' => 'Notification marquée comme lue.']);
+        $notif->delete();
+ 
+         return response()->json(['message' => 'Notification supprimée.']);
     }
 
     /**
@@ -51,9 +51,8 @@ class NotificationController extends Controller
     public function marquerToutesLues(Request $request)
     {
         Notification::where('user_id', $request->user()->id)
-            ->where('lu', false)
-            ->update(['lu' => true]);
-
-        return response()->json(['message' => 'Toutes les notifications ont été marquées comme lues.']);
+             ->delete();
+ 
+         return response()->json(['message' => 'Toutes les notifications ont été supprimées.']);
     }
 }

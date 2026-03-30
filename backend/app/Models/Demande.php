@@ -39,12 +39,10 @@ class Demande extends Model
     ];
 
     public static $types = [
-        'conge_annuel' => 'Congé Annuel',
-        'conge_maladie' => 'Congé Maladie',
-        'autorisation_absence' => 'Autorisation d\'Absence',
-        'sortie' => 'Autorisation de Sortie',
-        'conge_sans_solde' => 'Congé Sans Solde',
-        'autre' => 'Autre',
+        'conge' => 'Congé',
+        'absence' => 'Absence',
+        'sortie' => 'Sortie',
+        'conge_exceptionnel' => 'Congé Exceptionnel',
     ];
 
     // Relations

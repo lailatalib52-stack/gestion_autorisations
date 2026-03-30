@@ -14,12 +14,10 @@ import {
 } from 'lucide-react';
 
 const TYPE_LABELS = {
-  conge_annuel: 'Congé Annuel',
-  conge_maladie: 'Congé Maladie',
-  autorisation_absence: 'Abs. Auth.',
+  conge: 'Congé',
+  absence: 'Absence',
   sortie: 'Sortie',
-  conge_sans_solde: 'C. Sans Solde',
-  autre: 'Autre',
+  conge_exceptionnel: 'Congé Exceptionnel',
 };
 const PIE_COLORS = ['#1e4080', '#f59e0b', '#059669', '#0284c7', '#7c3aed', '#94a3b8'];
 

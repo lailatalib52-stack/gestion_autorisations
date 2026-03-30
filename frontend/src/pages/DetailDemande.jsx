@@ -8,9 +8,10 @@ import { fr } from 'date-fns/locale';
 import { ArrowLeft, Download, Edit2, CheckCircle, XCircle, MessageSquare } from 'lucide-react';
 
 const TYPE_LABELS = {
-  conge_annuel: 'Congé Annuel', conge_maladie: 'Congé Maladie',
-  autorisation_absence: "Autorisation d'Absence", sortie: 'Sortie',
-  conge_sans_solde: 'Congé Sans Solde', autre: 'Autre',
+  conge: 'Congé',
+  absence: 'Absence',
+  sortie: 'Sortie',
+  conge_exceptionnel: 'Congé Exceptionnel',
 };
 
 export default function DetailDemande() {

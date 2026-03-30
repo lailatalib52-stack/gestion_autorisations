@@ -6,13 +6,14 @@ import toast from 'react-hot-toast';
 import { ArrowLeft, Save, FileText } from 'lucide-react';
 
 const TYPES = [
-  { value:'conge_annuel', label:'Congé Annuel' },
-  { value:'conge_maladie', label:'Congé Maladie' },
-  { value:'autorisation_absence', label:"Autorisation d'Absence" },
-  { value:'sortie', label:'Autorisation de Sortie' },
-  { value:'conge_sans_solde', label:'Congé Sans Solde' },
-  { value:'autre', label:'Autre' },
+  { value: 'conge', label: '🌴 Congé' },
+  { value: 'conge_exceptionnel', label: '⭐ Congé Exceptionnel' },
+  { value: 'absence', label: '📅 Absence' },
+  { value: 'sortie', label: '🚪 Autorisation de Sortie' },
 ];
+
+// Single-day types that require only one date (same day, just a time for sortie)
+const SINGLE_DAY_TYPES = ['sortie', 'absence'];
 
 export default function NouvelleDemande({ editMode }) {
   const { user: currentUser } = useAuth();
@@ -47,16 +48,29 @@ export default function NouvelleDemande({ editMode }) {
   const set = (k, v) => {
     let newForm = { ...form, [k]: v };
     
-    // Logic for "sortie" type
-    if (k === 'type' && v === 'sortie') {
-      newForm.date_debut = ''; // Reset to let user pick time
-      newForm.date_fin = today;
-    } else if (k === 'type' && v !== 'sortie' && form.type === 'sortie') {
-      // Reset dates if switching away from sortie
-      newForm.date_debut = '';
-      newForm.date_fin = '';
+    if (k === 'type') {
+      if (v === 'sortie') {
+        // Sortie: only time input, date is auto today
+        newForm.date_debut = '';
+        newForm.date_fin = today;
+      } else if (v === 'absence') {
+        // Absence: single day, same date for start and end
+        newForm.date_debut = today;
+        newForm.date_fin = today;
+      } else {
+        // For other types, reset unless they were already set
+        if (SINGLE_DAY_TYPES.includes(form.type)) {
+          newForm.date_debut = '';
+          newForm.date_fin = '';
+        }
+      }
     }
 
+    // Sync date_fin when date_debut changes for absence
+    if (k === 'date_debut' && form.type === 'absence') {
+      newForm.date_fin = v;
+    }
+    
     setForm(newForm);
     setErrors(p => ({...p, [k]: ''}));
   };
@@ -81,8 +95,13 @@ export default function NouvelleDemande({ editMode }) {
     try {
       let dataToSend = { ...form };
       if (form.type === 'sortie') {
+        // For sortie: auto-generate full datetime with today's date
         dataToSend.date_debut = `${today} ${form.date_debut}`;
         dataToSend.date_fin = `${today} 23:59:59`;
+      } else if (form.type === 'absence') {
+        // For absence: both dates are same day
+        dataToSend.date_debut = form.date_debut;
+        dataToSend.date_fin = form.date_debut;
       }
 
       if (editMode) {
@@ -131,12 +150,14 @@ export default function NouvelleDemande({ editMode }) {
         </div>
 
         <form onSubmit={handleSubmit} style={{display:'flex',flexDirection:'column',gap:20}}>
-          {/* Type */}
+          {/* Type - Grouped by category */}
           <div className="form-group">
             <label className="form-label">Type de demande *</label>
             <select className="form-select" value={form.type} onChange={e => set('type', e.target.value)}>
               <option value="">-- Choisir un type --</option>
-              {TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+              {TYPES.map(t => (
+                <option key={t.value} value={t.value}>{t.label}</option>
+              ))}
             </select>
             {errors.type && <span className="form-error">{errors.type}</span>}
           </div>
@@ -144,7 +165,7 @@ export default function NouvelleDemande({ editMode }) {
           {/* Dates / Time */}
           {form.type === 'sortie' ? (
             <div className="form-group slide-in">
-              <label className="form-label">Heure de sortie * (Date: {today})</label>
+              <label className="form-label">Heure de sortie * <span style={{fontWeight:400, color:'var(--gray-400)'}}>— Date : {today}</span></label>
               <input 
                 className="form-input" 
                 type="time" 
@@ -157,7 +178,17 @@ export default function NouvelleDemande({ editMode }) {
               </span>
               {errors.date_debut && <span className="form-error">{errors.date_debut}</span>}
             </div>
-          ) : (
+          ) : form.type === 'autorisation_absence' ? (
+            <div className="form-group slide-in">
+              <label className="form-label">Date de l'absence *</label>
+              <input className="form-input" type="date" min={!editMode ? today : undefined}
+                value={form.date_debut} onChange={e => set('date_debut', e.target.value)} />
+              <span style={{fontSize:12,color:'var(--gray-400)',marginTop:4}}>
+                L'absence dure uniquement une journée.
+              </span>
+              {errors.date_debut && <span className="form-error">{errors.date_debut}</span>}
+            </div>
+          ) : form.type ? (
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16}} className="slide-in">
               <div className="form-group">
                 <label className="form-label">Date de début *</label>
@@ -172,10 +203,10 @@ export default function NouvelleDemande({ editMode }) {
                 {errors.date_fin && <span className="form-error">{errors.date_fin}</span>}
               </div>
             </div>
-          )}
+          ) : null}
 
           {/* Duration indicator */}
-          {form.type !== 'sortie' && duree !== null && duree > 0 && (
+          {form.type && !SINGLE_DAY_TYPES.includes(form.type) && duree !== null && duree > 0 && (
             <div style={{background:'var(--info-bg)',borderRadius:8,padding:'8px 14px',fontSize:13,color:'var(--info)',fontWeight:600}}>
               📅 Durée calculée : <strong>{duree} jour(s)</strong>
             </div>

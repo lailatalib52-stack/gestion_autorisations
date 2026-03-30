@@ -61,7 +61,7 @@ class DemandeController extends Controller
         $user = $request->user();
 
         $request->validate([
-            'type' => 'required|in:conge_annuel,conge_maladie,autorisation_absence,sortie,conge_sans_solde,autre',
+            'type' => 'required|in:conge,absence,sortie,conge_exceptionnel',
             'date_debut' => 'required|date|after_or_equal:today',
             'date_fin' => 'required|date|after_or_equal:date_debut',
             'motif' => 'required|string|max:1000',
@@ -156,7 +156,7 @@ class DemandeController extends Controller
         }
 
         $request->validate([
-            'type' => 'sometimes|in:conge_annuel,conge_maladie,autorisation_absence,sortie,conge_sans_solde,autre',
+            'type' => 'sometimes|in:conge,absence,sortie,conge_exceptionnel',
             'date_debut' => 'sometimes|date|after_or_equal:today',
             'date_fin' => 'sometimes|date|after_or_equal:date_debut',
             'motif' => 'sometimes|string|max:1000',

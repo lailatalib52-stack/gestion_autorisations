@@ -31,7 +31,7 @@ export default function Notifications() {
 
   const marquerLue = async (id) => {
     await notifService.marquerLue(id);
-    setNotifs(prev => prev.map(n => n.id === id ? { ...n, lu: true } : n));
+    setNotifs(prev => prev.filter(n => n.id !== id));
     window.dispatchEvent(new CustomEvent('notifications-updated'));
   };
 
@@ -51,11 +51,13 @@ export default function Notifications() {
           <h1 className="page-title">Notifications</h1>
           <p className="page-subtitle">{unread > 0 ? `${unread} non lue(s)` : 'Tout est lu'}</p>
         </div>
-        {unread > 0 && (
-          <button className="btn btn-secondary" onClick={marquerToutes}>
-            <CheckCheck size={16} /> Tout marquer comme lu
-          </button>
-        )}
+        <div style={{display:'flex', gap:10}}>
+          {notifs.length > 0 && (
+            <button className="btn btn-secondary" onClick={marquerToutes}>
+              <Trash2 size={16} /> Tout supprimer
+            </button>
+          )}
+        </div>
       </div>
 
       {loading ? (
@@ -76,8 +78,9 @@ export default function Notifications() {
             const style = TYPE_STYLES[n.type] || TYPE_STYLES.info;
             return (
               <div key={n.id}
-                className={`notif-item ${n.lu ? 'read' : ''}`}
-                onClick={() => !n.lu && marquerLue(n.id)}
+                className="notif-item"
+                onClick={() => marquerLue(n.id)}
+                style={{cursor:'pointer'}}
               >
                 <div style={{fontSize:22}}>{style.icon}</div>
                 <div style={{flex:1}}>
@@ -90,15 +93,24 @@ export default function Notifications() {
                     {n.created_at ? format(parseISO(n.created_at), 'd MMMM yyyy à HH:mm', { locale: fr }) : '-'}
                   </span>
                 </div>
-                {n.demande_id && (
-                  <Link to={`/demandes/${n.demande_id}`}
+                <div style={{display:'flex', gap:8}}>
+                  {n.demande_id && (
+                    <Link to={`/demandes/${n.demande_id}`}
+                      className="btn btn-ghost btn-sm btn-icon"
+                      style={{color:'var(--primary)'}}
+                      title="Voir la demande"
+                      onClick={e => { e.stopPropagation(); marquerLue(n.id); }}>
+                      <ExternalLink size={15} />
+                    </Link>
+                  )}
+                  <button 
                     className="btn btn-ghost btn-sm btn-icon"
-                    style={{color:'var(--primary)'}}
-                    title="Voir la demande"
-                    onClick={e => { e.stopPropagation(); if (!n.lu) marquerLue(n.id); }}>
-                    <ExternalLink size={15} />
-                  </Link>
-                )}
+                    style={{color:'var(--danger)'}}
+                    title="Supprimer"
+                    onClick={e => { e.stopPropagation(); marquerLue(n.id); }}>
+                    <Trash2 size={15} />
+                  </button>
+                </div>
               </div>
             );
           })}
